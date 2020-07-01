@@ -116,7 +116,7 @@ def missing_map(self, figsize=(8, 5), *args, **kwargs):
     return ax
 
 
-def misordered(self, cols, ascending=False, allow_equal=True):
+def misordered(self, cols, ascending=True, allow_equal=True):
     """Find rows of a dataframe in which the data are in the wrong order. For
        example, in a data frame `df` that looks like:
 
@@ -135,9 +135,9 @@ def misordered(self, cols, ascending=False, allow_equal=True):
        `allow_equal`: Allow values in adjacent columns to be equal"""
 
     if ascending:
-        op = operator.lt if allow_equal else operator.le
-    else:
         op = operator.gt if allow_equal else operator.ge
+    else:
+        op = operator.lt if allow_equal else operator.le
 
     mask = [op(self[a], self[b]) for a, b in zip(cols, cols[1:])]
     indices = self[logical_or.reduce(mask)].index
