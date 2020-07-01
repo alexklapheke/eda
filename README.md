@@ -1,4 +1,4 @@
-EDA is a small miscellany of tools for use with Pandas to facilitate exploratory data analysis. It is released under the MIT license.
+EDA is a small miscellany of tools to facilitate exploratory data analysis. It is released under the MIT license.
 
 # Installation
 
@@ -20,7 +20,7 @@ This module adds methods to Pandas data frames for exploring datasets. It is the
 * `df.summary_by(col)`: Like `summary`, but grouped by column `col`.
 * `df.missing()`: Show a bar plot of missing data by column.
 * `df.missing_by(col)`: Like `missing`, but grouped by column `col`.
-* `df.ordered([col1, col2, ...])`: Show rows which are in the wrong order; for example, `df.ordered(["start_date", "end_date"])` will show rows in which the start date precedes the end date.
+* `df.misordered([col1, col2, ...])`: Show rows which are in the wrong order; for example, `df.misordered(["start_date", "end_date"])` will show rows in which the start date precedes the end date.
 
 ## `accuracy` module
 

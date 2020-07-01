@@ -28,6 +28,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import pandas as pd
+from numpy import logical_or
+import operator
 
 
 def summary(self):
@@ -88,34 +90,31 @@ def missing_by(self, col, *args, **kwargs):
            )
 
 
-def ordered(self, cols, allow_equal=True):
+def misordered(self, cols, ascending=False, allow_equal=True):
     """Find rows of a dataframe in which the data are in the wrong order. For
        example, in a data frame `df` that looks like:
 
-       start      │ end
-       ───────────┼───────────
-       2000-01-01 │ 2001-12-31
-       2002-04-01 │ 2002-10-01
-       2002-01-01 │ 2001-10-31
+       start      │ middle     │ end
+       ───────────┼────────────┼───────────
+       2001-01-01 │ 2000-06-01 │ 2001-12-31
+       2002-04-01 │ 2002-08-01 │ 2002-10-01
+       2002-01-01 │ 2002-06-01 │ 2001-10-31
 
-       Running `df.ordered(["start", "end"]) will print the third row, in which
-       the end date is before the start date. You can put any number of columns
-       in the argument, and it will assume they are all relatively ordered.
+       Running `df.misordered(["start", "middle", "end"]) will print the first
+       row, in which the middle date precedes the start date, and the third
+       row, in which the end date precedes the start date. The following
+       Boolean arguments are also accepted:
 
-       Example usage:
+       `ascending`: Specifiy whether the *proper* order of columns is ascending
+       `allow_equal`: Allow values in adjacent columns to be equal"""
 
-       pd.DataFrame({
-          "start": [1, 2, 3],
-          "middle": [2, 3, 2],
-          "end": [1, 4, 1]
-       }).ordered(["start", "middle", "end"])"""
+    if ascending:
+        op = operator.lt if allow_equal else operator.le
+    else:
+        op = operator.gt if allow_equal else operator.ge
 
-    indices = set()
-    for a, b in zip(cols, cols[1:]):
-        if allow_equal:
-            indices.update(self[self[a] > self[b]].index)
-        else:
-            indices.update(self[self[a] >= self[b]].index)
+    mask = [op(self[a], self[b]) for a, b in zip(cols, cols[1:])]
+    indices = self[logical_or.reduce(mask)].index
     return self.loc[indices, cols]
 
 
@@ -123,4 +122,4 @@ pd.DataFrame.summary = summary
 pd.DataFrame.summary_by = summary_by
 pd.DataFrame.missing = missing
 pd.DataFrame.missing_by = missing_by
-pd.DataFrame.ordered = ordered
+pd.DataFrame.misordered = misordered
