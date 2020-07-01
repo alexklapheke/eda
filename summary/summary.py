@@ -30,6 +30,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from pandas import DataFrame, concat
 from numpy import logical_or
 import operator
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
 
 def summary(self):
@@ -92,6 +94,20 @@ def missing_by(self, col, *args, **kwargs):
            )
 
 
+def missing_map(self, figsize=(8, 5), *args, **kwargs):
+    """Display heatmap of missing data to uncover patterns. Note that the
+    columns of the dataframe are shown on the y-axis."""
+    cmap = LinearSegmentedColormap.from_list("cmap", ["#00000000", "red"])
+
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.imshow(self.T.isna(), aspect="auto", interpolation="none", cmap=cmap)
+    ax.set_title("Missing data")
+    ax.set_yticks(range(len(self.columns)))
+    ax.set_yticklabels(self.columns)
+
+    return ax
+
+
 def misordered(self, cols, ascending=False, allow_equal=True):
     """Find rows of a dataframe in which the data are in the wrong order. For
        example, in a data frame `df` that looks like:
@@ -124,4 +140,5 @@ DataFrame.summary = summary
 DataFrame.summary_by = summary_by
 DataFrame.missing = missing
 DataFrame.missing_by = missing_by
+DataFrame.missing_map = missing_map
 DataFrame.misordered = misordered
