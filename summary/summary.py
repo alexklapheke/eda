@@ -100,8 +100,16 @@ def missing_map(self, figsize=(8, 5), *args, **kwargs):
     cmap = LinearSegmentedColormap.from_list("cmap", ["#00000000", "red"])
 
     fig, ax = plt.subplots(figsize=figsize)
-    ax.imshow(self.T.isna(), aspect="auto", interpolation="none", cmap=cmap)
+    ax.imshow(self.T.isna(),
+              aspect="auto",  # stretch to fit canvas
+              interpolation="none",  # use raw data, without antialiasing etc.
+              extent=(-0.5, self.shape[0] - 0.5,
+                      -0.5, self.shape[1] - 0.5),
+              cmap=cmap)
     ax.set_title("Missing data")
+    ax.set_ylabel("Column")
+    ax.set_xlabel("Row position")
+    ax.set_xticks(range(self.shape[0]))
     ax.set_yticks(range(len(self.columns)))
     ax.set_yticklabels(self.columns)
 
