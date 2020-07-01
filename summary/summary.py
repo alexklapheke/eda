@@ -55,7 +55,7 @@ def summary_by(self, col):
 
 def missing(self, *args, **kwargs):
     """Display bar graph of missing data by column."""
-    self.\
+    return self.\
         isna().\
         mean().\
         apply(lambda x: x * 100).\
@@ -71,7 +71,7 @@ def missing(self, *args, **kwargs):
 
 def missing_by(self, col, *args, **kwargs):
     """Display bar graph of missing data by column, grouped by column `col`."""
-    self.\
+    return self.\
         drop(col, axis=1).\
         isna().\
         join(self[col]).\
@@ -88,7 +88,39 @@ def missing_by(self, col, *args, **kwargs):
            )
 
 
+def ordered(self, cols, allow_equal=True):
+    """Find rows of a dataframe in which the data are in the wrong order. For
+       example, in a data frame `df` that looks like:
+
+       start      │ end
+       ───────────┼───────────
+       2000-01-01 │ 2001-12-31
+       2002-04-01 │ 2002-10-01
+       2002-01-01 │ 2001-10-31
+
+       Running `df.ordered(["start", "end"]) will print the third row, in which
+       the end date is before the start date. You can put any number of columns
+       in the argument, and it will assume they are all relatively ordered.
+
+       Example usage:
+
+       pd.DataFrame({
+          "start": [1, 2, 3],
+          "middle": [2, 3, 2],
+          "end": [1, 4, 1]
+       }).ordered(["start", "middle", "end"])"""
+
+    indices = set()
+    for a, b in zip(cols, cols[1:]):
+        if allow_equal:
+            indices.update(self[self[a] > self[b]].index)
+        else:
+            indices.update(self[self[a] >= self[b]].index)
+    return self.loc[indices, cols]
+
+
 pd.DataFrame.summary = summary
 pd.DataFrame.summary_by = summary_by
 pd.DataFrame.missing = missing
 pd.DataFrame.missing_by = missing_by
+pd.DataFrame.ordered = ordered
