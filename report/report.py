@@ -33,15 +33,15 @@ from re import match
 
 def _markdowntable(*columns, caption=""):
     """Format list of objects as row in markdown table"""
-    cols = []
-    for i, col in enumerate(columns):
-        width = max(map(lambda x: len(str(x)), col))
-        cols.append(["| " + "{:{w}}".format(str(c), w=width) for c in col])
+
+    # List of widths of each column
+    width = [max(len(str(cell)) for cell in col) for col in columns]
 
     table = caption + "\n\n"
 
-    for row in zip(*cols):
-        row_str = " ".join(map(str, row)) + " |\n"
+    for row in zip(*columns):
+        row_str = " ".join(["| {:{w}}".format(str(cell), w=w)
+                            for cell, w in zip(row, width)]) + " |\n"
 
         # GitHub markdown calls for separators that are only dashes and pipes,
         # no plus signs: <https://github.github.com/gfm/#tables-extension->
@@ -56,7 +56,10 @@ def _markdowntable(*columns, caption=""):
 def data_dictionary(self):
     """Generate a data dictionary for a given data frame in GitHub-flavored
     markdown, with a description column to be filled in by hand. It is
-    recommended you name your data frame: df.name = "..."."""
+    recommended you name your data frame: df.name = "...". To write to a file:
+
+    with open("datadict.md", "w")  as outfile:
+        print(df.data_dictionary(), file=outfile)"""
 
     try:
         name = self.name
