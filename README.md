@@ -1,4 +1,4 @@
-EDA is a small miscellany of tools to facilitate exploratory data analysis. It is released under the MIT license.
+EDA is a small miscellany of tools to facilitate exploratory data analysis and other common data science tasks. It is released under the MIT license.
 
 # Installation
 
@@ -32,3 +32,9 @@ This module contains standalone functions for evaluating models.
 * `fuzzy_accuracy(y_true, y_pred, tolerance)`: For a multiclass classification of ordinal data, show the percent of results that were within `tolerance` of the true class.
 * `cohens_kappa(y_pred1, y_pred2)`: Given the results of two models, calculate the degree to which they agree using [Cohen's kappa](https://en.wikipedia.org/wiki/Cohen%27s_kappa), from 0 (no agreement) to 1 (perfect agreement).
 * `test_LINE(y_true, y_pred)`: Show some plots to help test the ["LINE" assumptions](http://people.duke.edu/~rnau/testing.htm) of a linear regression.
+
+## `report` module
+
+Like `summary`, this module adds methods to Pandas data frames.
+
+* `df.data_dictionary()`: Return a data dictionary in GitHub-flavored markdown, suitable for inclusion in a GitHub README.

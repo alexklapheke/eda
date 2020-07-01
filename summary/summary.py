@@ -1,5 +1,5 @@
 """
-File: eda.py
+File: summary.py
 Author: Alex Klapheke
 Email: alexklapheke@gmail.com
 Github: https://github.com/alexklapheke
@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import pandas as pd
+from pandas import DataFrame, concat
 from numpy import logical_or
 import operator
 
@@ -35,10 +35,10 @@ import operator
 def summary(self):
     """Describe the columns of a data frame with
     excerpted values, types, and summary statistics."""
-    return pd.concat([
+    return concat([
             self.head(5).T,
-            pd.DataFrame({"type": self.dtypes}),
-            pd.DataFrame({"pct_missing": self.isna().mean() * 100}),
+            DataFrame({"type": self.dtypes}),
+            DataFrame({"pct_missing": self.isna().mean() * 100}),
             self.describe(percentiles=[0.5]).drop("count").T
         ], axis=1)
 
@@ -47,7 +47,7 @@ def summary_by(self, col):
     """Describe the columns of a data frame, grouped by column
     `col` with excerpted values, types, and summary statistics."""
     dfg = self.groupby(col)
-    return pd.concat([
+    return concat([
             dfg.first().T.add_prefix("head_"),
             dfg.dtypes.T.add_prefix("type_"),
             dfg.apply(lambda x: x.isna().mean() * 100)
@@ -61,6 +61,7 @@ def missing(self, *args, **kwargs):
         isna().\
         mean().\
         apply(lambda x: x * 100).\
+        iloc[::-1].\
         plot.\
         barh(
             title="Percent data missing by column",
@@ -80,6 +81,7 @@ def missing_by(self, col, *args, **kwargs):
         groupby(col).\
         mean().\
         apply(lambda x: x * 100).\
+        iloc[:, ::-1].\
         transpose().\
         plot.\
         barh(
@@ -118,8 +120,8 @@ def misordered(self, cols, ascending=False, allow_equal=True):
     return self.loc[indices, cols]
 
 
-pd.DataFrame.summary = summary
-pd.DataFrame.summary_by = summary_by
-pd.DataFrame.missing = missing
-pd.DataFrame.missing_by = missing_by
-pd.DataFrame.misordered = misordered
+DataFrame.summary = summary
+DataFrame.summary_by = summary_by
+DataFrame.missing = missing
+DataFrame.missing_by = missing_by
+DataFrame.misordered = misordered
