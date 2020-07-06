@@ -27,9 +27,8 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from pandas import DataFrame
-from pandas.api.types import is_numeric_dtype
-from pandas._libs.tslibs.timestamps import Timestamp
+from pandas import DataFrame, to_datetime
+from pandas.api.types import is_numeric_dtype, is_datetime64_dtype
 from re import match
 import numpy as np
 
@@ -38,6 +37,8 @@ def sparkline(series, width=8, plottype="bar"):
     """Generate a basic sparkline graph, consisting of `width` bars, of an
     iterable of numeric data. Each bar represents the mean of that fraction of
     the data. Allowed `plottype`s are "bar" and "shade"."""
+
+    np.seterr('raise')
 
     plottypes = {
         "bar":   "▁▂▃▄▅▆▇█",
@@ -68,7 +69,10 @@ def sparkline(series, width=8, plottype="bar"):
 
     for i in chunks:
         # Normalize to be between 0 and len(chars)
-        level = (i - smin) / (smax - smin) * (len(chars) - 1)
+        try:
+            level = (i - smin) / (smax - smin) * (len(chars) - 1)
+        except FloatingPointError:
+            level = 0
 
         # If the data is missing, replace with a *nonbreaking* space character
         graph += " " if np.isnan(level) else chars[int(round(level))]
@@ -98,14 +102,22 @@ def _markdowntable(*columns, caption=""):
     return table
 
 
-def _format(obj):
-    """Format numbers and dates"""
-    if type(obj) == str:
-        return ""
-    elif type(obj) == Timestamp:
-        return obj.strftime("%b %_d, %Y")
-    else:
-        return "{:,}".format(obj)
+def _data_range(df):
+    _range = []
+
+    for colname in df.columns:
+        col = df[colname]
+
+        if is_datetime64_dtype(col):
+            _range.append(col.min().strftime("%b %_d, %Y") + " – " +
+                          col.max().strftime("%b %_d, %Y"))
+        elif is_numeric_dtype(col):
+            _range.append("{:,}".format(col.min()) + " – " +
+                          "{:,}".format(col.max()))
+        else:
+            _range.append("")
+
+    return _range
 
 
 def data_dictionary(self):
@@ -115,21 +127,22 @@ def data_dictionary(self):
     with open("datadict.md", "w")  as outfile:
         print(df.data_dictionary(), file=outfile)"""
 
-    missing_total = self.isna().sum().sum()
+    missing = self.isna().sum()
+    missing_total = missing.sum()
     s = "" if missing_total == 1 else "s"
 
-    caption = f"Data frame, {self.shape[0]} rows with " +\
-              f"{missing_total} missing value{s}:"
+    missing_zip = zip(missing, missing / self.shape[0])
 
-    mins = map(_format, self.min())
-    maxs = map(_format, self.max())
+    caption = f"Data frame, {self.shape[0]:,} rows with " +\
+              f"{missing_total:,} missing value{s}:"
 
     # The row of empty strings will be turned into a separator line
     return _markdowntable(
             ["Column",         ""] + list(map("`{}`".format, self.columns)),
             ["Type",           ""] + list(map("`{}`".format, self.dtypes)),
-            ["Missing values", ""] + list(self.isna().sum()),
-            ["Range",          ""] + list(map(" – ".join, zip(mins, maxs))),
+            ["Missing values", ""] + ["{:,} ({:.0%})".format(no, pct)
+                                      for no, pct in missing_zip],
+            ["Range",          ""] + _data_range(self),
             ["Distribution",   ""] + [sparkline(self[col]) for col in self],
             ["Description",    ""] + [""] * self.shape[1],
             caption=caption
