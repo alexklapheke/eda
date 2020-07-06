@@ -39,4 +39,9 @@ This module contains standalone functions for evaluating models.
 Like `summary`, this module adds methods to Pandas data frames.
 
 * `sparkline(series)`: Produce a [sparkline](https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0001OR&topic_id=1) given an iterable of numerics.
-* `df.data_dictionary()`: Return a data dictionary in GitHub-flavored markdown, suitable for inclusion in a GitHub README.
+* `df.data_dictionary()`: Return a data dictionary in GitHub-flavored markdown, suitable for inclusion in a GitHub README. In an iPython environment, such as a Jupyter notebook, you can pretty-print this:
+
+	```
+	from IPython.display import Markdown
+	display(Markdown(fio.data_dictionary()))
+	```
