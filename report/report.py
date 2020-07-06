@@ -33,7 +33,7 @@ from re import match
 import numpy as np
 
 
-def sparkline(series, width=8, plottype="bar", hist=False):
+def sparkline(series, width=10, plottype="bar", hist=False):
     """Generate a basic sparkline graph, consisting of `width` bars, of an
     iterable of numeric data. Each bar represents the mean of that fraction of
     the data. Allowed `plottype`s are "bar" and "shade". If `hist` is true,
@@ -53,7 +53,9 @@ def sparkline(series, width=8, plottype="bar", hist=False):
 
     # Convert to proper type
     series = np.array(series)
-    if not is_numeric_dtype(series):
+    if is_datetime64_dtype(series):
+        series = np.array([np.nan if np.isnat(x) else int(x) for x in series])
+    elif not is_numeric_dtype(series):
         return " " * width
 
     smin = np.nanmin(series)
@@ -64,6 +66,9 @@ def sparkline(series, width=8, plottype="bar", hist=False):
 
         # Drop NaNs, as they will not count anyway
         series = series[~np.isnan(series)]
+
+        # If we have fewer levels than bins, just use a bin for each level
+        width = min(width, len(np.unique(series)))
 
         # Since we do strict less-than below, if the highest bin edge
         # were the max of the series, the max of the seires would not
@@ -165,8 +170,8 @@ def data_dictionary(self):
             ["Missing values", ""] + ["{:,} ({:.0%})".format(no, pct)
                                       for no, pct in missing_zip],
             ["Range",          ""] + _data_range(self),
-            ["Distribution",   ""] + [sparkline(self[col]) for col in self],
-            ["Histogram",      ""] + [sparkline(self[col], hist=True) for col in self],
+            ["Distribution",   ""] + [sparkline(self[col], hist=True)
+                                      for col in self],
             ["Description",    ""] + [""] * self.shape[1],
             caption=caption
             )
