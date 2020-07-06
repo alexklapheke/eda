@@ -33,10 +33,11 @@ from re import match
 import numpy as np
 
 
-def sparkline(series, width=8, plottype="bar"):
+def sparkline(series, width=8, plottype="bar", hist=False):
     """Generate a basic sparkline graph, consisting of `width` bars, of an
     iterable of numeric data. Each bar represents the mean of that fraction of
-    the data. Allowed `plottype`s are "bar" and "shade"."""
+    the data. Allowed `plottype`s are "bar" and "shade". If `hist` is true,
+    plot a histogram of the data in `width` bins."""
 
     np.seterr('raise')
 
@@ -48,34 +49,55 @@ def sparkline(series, width=8, plottype="bar"):
     try:
         chars = plottypes[plottype]
     except KeyError:
-        raise KeyError("Allowed plot types: " + ", ".join(plottypes.keys()))
+        print("Allowed plot types: " + ", ".join(plottypes.keys()))
 
     # Convert to proper type
     series = np.array(series)
     if not is_numeric_dtype(series):
         return " " * width
 
-    # If we have fewer rows than bars, just use a bar for each row
-    width = min(width, series.shape[0])
-
-    # chunk into {width} chunks
-    chunk_indices = np.linspace(0, series.shape[0], width+1)
-    chunks = map(lambda tup: np.nanmean(series[int(tup[0]):int(tup[1])]),
-                 zip(chunk_indices, chunk_indices[1:]))
-
     smin = np.nanmin(series)
     smax = np.nanmax(series)
     graph = ""
 
-    for i in chunks:
-        # Normalize to be between 0 and len(chars)
-        try:
-            level = (i - smin) / (smax - smin) * (len(chars) - 1)
-        except FloatingPointError:
-            level = 0
+    if hist:
 
-        # If the data is missing, replace with a *nonbreaking* space character
-        graph += " " if np.isnan(level) else chars[int(round(level))]
+        # Drop NaNs, as they will not count anyway
+        series = series[~np.isnan(series)]
+
+        # Since we do strict less-than below, if the highest bin edge
+        # were the max of the series, the max of the seires would not
+        # be counted. So we make the highest bin edge infinity.
+        bins = np.linspace(smin, smax, width, endpoint=False)
+        bins = np.append(bins, np.inf)
+
+        # Divide into bins
+        levels = [np.sum((series >= bmin) & (series < bmax))
+                  for bmin, bmax in zip(bins, bins[1:])]
+
+        for level in levels:
+            level = level / max(levels) * (len(chars) - 1)
+            graph += chars[int(round(level))]
+
+    else:
+
+        # If we have fewer rows than bars, just use a bar for each row
+        width = min(width, series.shape[0])
+
+        # chunk into {width} chunks
+        chunk_indices = np.linspace(0, series.shape[0], width+1)
+        chunks = map(lambda tup: np.nanmean(series[int(tup[0]):int(tup[1])]),
+                     zip(chunk_indices, chunk_indices[1:]))
+
+        for i in chunks:
+            # Normalize to be between 0 and len(chars)
+            try:
+                level = (i - smin) / (smax - smin) * (len(chars) - 1)
+            except FloatingPointError:
+                level = 0
+
+            # If the data is missing, replace with a *nonbreaking* space
+            graph += " " if np.isnan(level) else chars[int(round(level))]
 
     return graph
 
@@ -144,6 +166,7 @@ def data_dictionary(self):
                                       for no, pct in missing_zip],
             ["Range",          ""] + _data_range(self),
             ["Distribution",   ""] + [sparkline(self[col]) for col in self],
+            ["Histogram",      ""] + [sparkline(self[col], hist=True) for col in self],
             ["Description",    ""] + [""] * self.shape[1],
             caption=caption
             )
