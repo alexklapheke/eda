@@ -34,12 +34,22 @@ from re import match
 import numpy as np
 
 
-def sparkline(series, width=8, chars="▁▂▃▄▅▆▇█"):
+def sparkline(series, width=8, plottype="bar"):
     """Generate a basic sparkline graph, consisting of `width` bars, of an
     iterable of numeric data. Each bar represents the mean of that fraction of
-    the data. The `chars` option lets you choose which characters to use, in
-    ascending order."""
+    the data. Allowed `plottype`s are "bar" and "shade"."""
 
+    plottypes = {
+        "bar":   "▁▂▃▄▅▆▇█",
+        "shade": "░▒▓█"
+    }
+
+    try:
+        chars = plottypes[plottype]
+    except KeyError:
+        raise KeyError("Allowed plot types: " + ", ".join(plottypes.keys()))
+
+    # Convert to proper type
     series = np.array(series)
     if not is_numeric_dtype(series):
         return " " * width
@@ -57,11 +67,11 @@ def sparkline(series, width=8, chars="▁▂▃▄▅▆▇█"):
     graph = ""
 
     for i in chunks:
-        # Normalize to be between 0 and 1
-        level = ((i - smin) / (smax - smin))
+        # Normalize to be between 0 and len(chars)
+        level = (i - smin) / (smax - smin) * (len(chars) - 1)
 
         # If the data is missing, replace with a *nonbreaking* space character
-        graph += " " if np.isnan(level) else chars[int(level * (len(chars)-1))]
+        graph += " " if np.isnan(level) else chars[int(round(level))]
 
     return graph
 

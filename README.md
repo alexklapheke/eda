@@ -21,7 +21,7 @@ This module adds methods to Pandas data frames for exploring datasets. It is the
 * `df.missing()`: Show a bar plot of missing data by column.
 * `df.missing_by(col)`: Like `missing`, but grouped by column `col`.
 * `df.missing_map()`: Show a heatmap of missing data to uncover patterns.
-* `df.misordered([col1, col2, ...])`: Show rows which are in the wrong order; for example, `df.misordered(["start_date", "end_date"])` will show rows in which the start date precedes the end date.
+* `df.misordered([col1, col2, ...])`: Show rows which are in the wrong order; for example, `df.misordered(["start_date", "end_date"])` will show rows in which the end date precedes the start date.
 
 ## `accuracy` module
 
