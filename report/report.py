@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from pandas import DataFrame, to_datetime
+from pandas import DataFrame, Series
 from pandas.api.types import is_numeric_dtype, is_datetime64_dtype
 from re import match
 import numpy as np
@@ -107,6 +107,22 @@ def sparkline(series, width=10, plottype="bar", hist=False):
     return graph
 
 
+def sparkline_series(self, *args, **kwargs):
+    """Generate a basic sparkline graph, consisting of `width` bars, of an
+    iterable of numeric data. Each bar represents the mean of that fraction of
+    the data. Allowed `plottype`s are "bar" and "shade". If `hist` is true,
+    plot a histogram of the data in `width` bins."""
+    return sparkline(self, *args, **kwargs)
+
+
+def sparkline_dataframe(self, col, *args, **kwargs):
+    """Generate a basic sparkline graph, consisting of `width` bars, of an
+    iterable of numeric data. Each bar represents the mean of that fraction of
+    the data. Allowed `plottype`s are "bar" and "shade". If `hist` is true,
+    plot a histogram of the data in `width` bins."""
+    return sparkline(self[col], *args, **kwargs)
+
+
 def _markdowntable(*columns, caption=""):
     """Format list of objects as row in markdown table"""
 
@@ -170,7 +186,7 @@ def data_dictionary(self):
             ["Missing values", ""] + ["{:,} ({:.0%})".format(no, pct)
                                       for no, pct in missing_zip],
             ["Range",          ""] + _data_range(self),
-            ["Distribution",   ""] + [sparkline(self[col], hist=True)
+            ["Distribution",   ""] + [self.sparkline(col, hist=True)
                                       for col in self],
             ["Description",    ""] + [""] * self.shape[1],
             caption=caption
@@ -178,3 +194,5 @@ def data_dictionary(self):
 
 
 DataFrame.data_dictionary = data_dictionary
+Series.sparkline = sparkline_series
+DataFrame.sparkline = sparkline_dataframe
