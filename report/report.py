@@ -155,8 +155,8 @@ def _data_range(df):
             _range.append(col.min().strftime("%b %_d, %Y") + " – " +
                           col.max().strftime("%b %_d, %Y"))
         elif is_numeric_dtype(col):
-            _range.append("{:,}".format(col.min()) + " – " +
-                          "{:,}".format(col.max()))
+            _range.append("{:n}".format(col.min()) + " – " +
+                          "{:n}".format(col.max()))
         else:
             _range.append("")
 
