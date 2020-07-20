@@ -43,6 +43,7 @@ def sparkline(series, width=10, plottype="bar", hist=False):
 
     plottypes = {
         "bar":   "▁▂▃▄▅▆▇█",
+        "line":   "⎽⎼─⎻⎺",
         "shade": "░▒▓█"
     }
 
@@ -102,7 +103,7 @@ def sparkline(series, width=10, plottype="bar", hist=False):
                 level = 0
 
             # If the data is missing, replace with a *nonbreaking* space
-            graph += " " if np.isnan(level) else chars[int(round(level))]
+            graph += "\u00A0" if np.isnan(level) else chars[int(round(level))]
 
     return graph
 
@@ -132,11 +133,13 @@ def _markdowntable(*columns, caption=""):
     table = caption + "\n\n"
 
     for row in zip(*columns):
+        # Format row elements, separated by pipes
         row_str = " ".join(["| {:{w}}".format(str(cell), w=w)
                             for cell, w in zip(row, widths)]) + " |\n"
 
-        # GitHub markdown calls for separators that are only dashes and pipes,
-        # no plus signs: <https://github.github.com/gfm/#tables-extension->
+        # Turn empty rows into separator rows. GitHub markdown calls
+        # for separators that are only dashes and pipes, no plus
+        # signs: <https://github.github.com/gfm/#tables-extension->
         if match("^[| ]+$", row_str):
             row_str = row_str.replace(" ", "-")
 

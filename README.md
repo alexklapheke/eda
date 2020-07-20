@@ -34,6 +34,12 @@ This module contains standalone functions for evaluating models.
 * `cohens_kappa(y_pred1, y_pred2)`: Given the results of two models, calculate the degree to which they agree using [Cohen's kappa](https://en.wikipedia.org/wiki/Cohen%27s_kappa), from 0 (no agreement) to 1 (perfect agreement).
 * `test_LINE(y_true, y_pred)`: Show some plots to help test the ["LINE" assumptions](http://people.duke.edu/~rnau/testing.htm) of a linear regression.
 
+## `model` module
+
+This module is for modeling.
+
+* `DBSCAN()`: an implementation of the [DBSCAN](https://en.wikipedia.org/wiki/DBSCAN) clustering algorithm, that doesn't require the high [memory overhead](https://stackoverflow.com/q/16381577) of scikit-learn's implementation, which is quadratic in the number of data points. Uses sklearn's `.fit()`/`.predict()` convention.
+
 ## `report` module
 
 Like `summary`, this module adds methods to Pandas data frames.
