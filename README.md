@@ -36,9 +36,9 @@ This module contains standalone functions for evaluating models.
 
 ## `model` module
 
-This module is for modeling.
+This module is for machine learning.
 
-* `DBSCAN()`: an implementation of the [DBSCAN](https://en.wikipedia.org/wiki/DBSCAN) clustering algorithm, that doesn't require the high [memory overhead](https://stackoverflow.com/q/16381577) of scikit-learn's implementation, which is quadratic in the number of data points. Uses sklearn's `.fit()`/`.predict()` convention.
+* `DBSCAN()`: an implementation of the [DBSCAN](https://en.wikipedia.org/wiki/DBSCAN) clustering algorithm, that doesn't require the high [memory overhead](https://stackoverflow.com/questions/16381577/scikit-learn-dbscan-memory-usage) of scikit-learn's implementation (worst case O(n²); can easily use several GB of memory). Uses sklearn's `.fit()`/`.predict()` convention.
 
 ## `report` module
 
