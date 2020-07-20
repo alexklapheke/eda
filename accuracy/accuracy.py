@@ -30,11 +30,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import numpy as np
 import matplotlib.pyplot as plt
 from pandas import DataFrame
-from sklearn.metrics import confusion_matrix
 from seaborn import heatmap
 
 
-def accuracy_metrics(y_true, y_pred):
+def accuracy_metrics(y_true, y_pred, f_score=False):
     """
     Takes a list of true outputs and model-predicted outputs, and
     returns a confusion matrix with classification metrics which is
@@ -48,15 +47,27 @@ def accuracy_metrics(y_true, y_pred):
     Intuitively, each metric is derived solely from the row or column to
     which it is adjacent, and accuracy is derived from the whole table.
     """
+    assert len(y_true) == len(y_pred), "Arrays must be the same length."
 
-    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+    # Cast arrays to use efficiently with numpy
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
 
+    # Calculate confusion matrix
+    tp = np.sum((y_true == y_pred) & y_true)
+    tn = np.sum((y_true == y_pred) & ~y_true)
+    fp = np.sum((y_true != y_pred) & ~y_true)
+    fn = np.sum((y_true != y_pred) & y_true)
+
+    # Calculate accuracy measures
     sens = tp / (tp + fn)
     spec = tn / (tn + fp)
     ppv = tp / (tp + fp)
     npv = tn / (tn + fn)
     acc = (tp + tn) / (tp + fp + tn + fn)
+    # f = 2 * ppv * sens / (ppv + sens)
 
+    # Compile into data frame
     return DataFrame([
             [tp, fn, sens],
             [fp, tn, spec],
