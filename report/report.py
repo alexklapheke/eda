@@ -28,16 +28,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from pandas import DataFrame, Series
-from pandas.api.types import is_numeric_dtype, is_datetime64_dtype
+from pandas.api.types import is_numeric_dtype, is_datetime64_any_dtype
 from re import match
 import numpy as np
 
 
 def sparkline(series, width=10, plottype="bar", hist=False):
-    """Generate a basic sparkline graph, consisting of `width` bars, of an
-    iterable of numeric data. Each bar represents the mean of that fraction of
-    the data. Allowed `plottype`s are "bar" and "shade". If `hist` is true,
-    plot a histogram of the data in `width` bins."""
+    """Generate a basic sparkline graph, consisting of `width` bars,
+    of an iterable of numeric data. Each bar represents the mean of
+    that fraction of the data. Allowed `plottype`s are "bar", "line",
+    and "shade". If `hist` is true, plot a histogram of the data in
+    `width` bins."""
 
     np.seterr('raise')
 
@@ -53,10 +54,14 @@ def sparkline(series, width=10, plottype="bar", hist=False):
         print("Allowed plot types: " + ", ".join(plottypes.keys()))
 
     # Convert to proper type
-    series = np.array(series)
-    if is_datetime64_dtype(series):
-        series = np.array([np.nan if np.isnat(x) else int(x) for x in series])
-    elif not is_numeric_dtype(series):
+    if is_datetime64_any_dtype(series):
+        series = np.array([np.nan if np.isnat(x) else int(x)
+                           for x in np.array(series, dtype=np.datetime64)])
+    else:
+        series = np.array(series)
+
+    # If not numeric, there's nothing to plot
+    if not is_numeric_dtype(series):
         return " " * width
 
     smin = np.nanmin(series)
@@ -108,7 +113,7 @@ def sparkline(series, width=10, plottype="bar", hist=False):
     return graph
 
 
-def sparkline_series(self, *args, **kwargs):
+def _sparkline_series(self, *args, **kwargs):
     """Generate a basic sparkline graph, consisting of `width` bars, of an
     iterable of numeric data. Each bar represents the mean of that fraction of
     the data. Allowed `plottype`s are "bar" and "shade". If `hist` is true,
@@ -116,7 +121,7 @@ def sparkline_series(self, *args, **kwargs):
     return sparkline(self, *args, **kwargs)
 
 
-def sparkline_dataframe(self, col, *args, **kwargs):
+def _sparkline_dataframe(self, col, *args, **kwargs):
     """Generate a basic sparkline graph, consisting of `width` bars, of an
     iterable of numeric data. Each bar represents the mean of that fraction of
     the data. Allowed `plottype`s are "bar" and "shade". If `hist` is true,
@@ -154,7 +159,7 @@ def _data_range(df):
     for colname in df.columns:
         col = df[colname]
 
-        if is_datetime64_dtype(col):
+        if is_datetime64_any_dtype(col):
             _range.append(col.min().strftime("%b %_d, %Y") + " – " +
                           col.max().strftime("%b %_d, %Y"))
         elif is_numeric_dtype(col):
@@ -197,5 +202,5 @@ def data_dictionary(self):
 
 
 DataFrame.data_dictionary = data_dictionary
-Series.sparkline = sparkline_series
-DataFrame.sparkline = sparkline_dataframe
+Series.sparkline = _sparkline_series
+DataFrame.sparkline = _sparkline_dataframe
