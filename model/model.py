@@ -45,7 +45,7 @@ class DBSCAN(BaseEstimator, ClusterMixin):
 
         eps:         The maximum distance to another point for it to be
                      considered part of the same cluster. Default: 0.5
-        n_samples:   The minimum number of points to be considered a cluster.
+        min_samples: The minimum number of points to be considered a cluster.
                      Default: 5
         p:           The p-norm to use for distance metric. 1 is equivalent to
                      taxicab distance. 2 is equivalent to Euclidean distance.
@@ -60,10 +60,10 @@ class DBSCAN(BaseEstimator, ClusterMixin):
         .silhouette_: The silhouette score of the clustering, from -1 (worst)
                       to 1 (best)"""
 
-    def __init__(self, eps=0.5, n_samples=5, p=2):
+    def __init__(self, eps=0.5, min_samples=5, p=2):
         # User-set
         self.eps = eps
-        self.n_samples = n_samples
+        self.min_samples = min_samples
         self.p = p
 
         # Built-in
@@ -85,7 +85,7 @@ class DBSCAN(BaseEstimator, ClusterMixin):
         """Use a numpy array as a dictionary key"""
         return hash(key.data.tobytes())
 
-    def fit(self, X):
+    def fit(self, X, y=None):
         cluster = -1
         X = np.array(X)
 
@@ -100,7 +100,7 @@ class DBSCAN(BaseEstimator, ClusterMixin):
             new_neighbors = np.copy(all_neighbors)
 
             # Assign to current cluster, or to "noise cluster"
-            if X[all_neighbors].shape[0] >= self.n_samples:
+            if X[all_neighbors].shape[0] >= self.min_samples:
                 cluster += 1
                 self._labels[self._k(p)] = cluster
             else:
