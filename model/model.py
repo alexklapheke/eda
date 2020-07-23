@@ -28,10 +28,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import numpy as np
+from sklearn.base import BaseEstimator, ClusterMixin
+from sklearn.exceptions import NotFittedError
 from sklearn.metrics import silhouette_score
 
 
-class DBSCAN:
+class DBSCAN(BaseEstimator, ClusterMixin):
     """Memory-light implementation of DBSCAN. Unlike sklearn, does not
     precompute a distance matrix, trading off memory for time. The value
     -1 is assigned to points that don't fit into a cluster. Example usage:
@@ -41,9 +43,9 @@ class DBSCAN:
 
     You can pass the following options to the instance declaration:
 
-        epsilon:     The maximum distance to another point for it to be
+        eps:         The maximum distance to another point for it to be
                      considered part of the same cluster. Default: 0.5
-        min_points:  The minimum number of points to be considered a cluster.
+        n_samples:   The minimum number of points to be considered a cluster.
                      Default: 5
         p:           The p-norm to use for distance metric. 1 is equivalent to
                      taxicab distance. 2 is equivalent to Euclidean distance.
@@ -58,10 +60,10 @@ class DBSCAN:
         .silhouette_: The silhouette score of the clustering, from -1 (worst)
                       to 1 (best)"""
 
-    def __init__(self, epsilon=0.5, min_points=5, p=2):
+    def __init__(self, eps=0.5, n_samples=5, p=2):
         # User-set
-        self.epsilon = epsilon
-        self.min_points = min_points
+        self.eps = eps
+        self.n_samples = n_samples
         self.p = p
 
         # Built-in
@@ -70,6 +72,10 @@ class DBSCAN:
         # Initialize
         self._labels = dict()
         self.is_fit = False
+
+    def _check_fit(self):
+        if not self.is_fit:
+            raise NotFittedError("You must fit the model to data first!")
 
     def _metric(self, x1, x2):
         """Distance metric of order self.p"""
@@ -90,11 +96,11 @@ class DBSCAN:
                 continue
 
             # Find neighbors
-            all_neighbors = self._metric(X, p) < self.epsilon
+            all_neighbors = self._metric(X, p) < self.eps
             new_neighbors = np.copy(all_neighbors)
 
             # Assign to current cluster, or to "noise cluster"
-            if X[all_neighbors].shape[0] >= self.min_points:
+            if X[all_neighbors].shape[0] >= self.n_samples:
                 cluster += 1
                 self._labels[self._k(p)] = cluster
             else:
@@ -110,20 +116,20 @@ class DBSCAN:
                 for q in X[new_neighbors]:
                     if self._k(q) not in self._labels or self._k(q) == -1:
                         self._labels[self._k(q)] = cluster
-                        new_neighbors |= self._metric(X, q) < self.epsilon
+                        new_neighbors |= self._metric(X, q) < self.eps
 
                 # Remove previously classified
                 new_neighbors &= ~all_neighbors
 
+        self.is_fit = True
         self.n_clusters_ = cluster + 1
         self.labels_ = self.predict(X)
         self.silhouette_ = silhouette_score(X, self.labels_)
-        self.is_fit = True
 
     def predict(self, X):
-        assert self.is_fit, "You must fit the model to data first!"
+        self._check_fit()
         return [self._labels[self._k(p)] for p in np.array(X)]
 
-    def fit_predict(self, X):
-        self.fit(X)
-        return self.labels_
+    def score(self):
+        self._check_fit()
+        return self.silhouette_
