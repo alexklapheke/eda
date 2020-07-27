@@ -131,6 +131,7 @@ def _sparkline_dataframe(self, col, *args, **kwargs):
 
 def _markdowntable(*columns, caption=""):
     """Format list of objects as row in markdown table"""
+    columns = list(filter(bool, columns))
 
     # List of widths of each column
     widths = [max(len(str(cell)) for cell in col) for col in columns]
@@ -171,12 +172,28 @@ def _data_range(df):
     return _range
 
 
-def data_dictionary(self):
+def agg(col, fun):
+    try:
+        return "{:n}".format(col.agg(fun))
+    except TypeError:
+        return ""
+
+
+def data_dictionary(self, **kwargs):
     """Generate a data dictionary for a given data frame in GitHub-flavored
     markdown, with a description column to be filled in by hand. To write out:
 
-    with open("datadict.md", "w")  as outfile:
-        print(df.data_dictionary(), file=outfile)"""
+        with open("datadict.md", "w")  as outfile:
+            print(df.data_dictionary(), file=outfile)
+
+    You can add any aggregation columns with the syntax Title=Function. Any
+    function that can be passed to pandas.DataFrame.agg can be passed here.
+    Passing False will add a blank column. For example:
+
+        df.data_dictionary(Mean=np.mean, Median="median", Description=False)
+
+    will create mean and median columns, and a blank "Description" column to be
+    filled in manually by the user."""
 
     missing = self.isna().sum()
     missing_total = missing.sum()
@@ -196,7 +213,8 @@ def data_dictionary(self):
             ["Range",          ""] + _data_range(self),
             ["Distribution",   ""] + [self.sparkline(col, hist=True)
                                       for col in self],
-            ["Description",    ""] + [""] * self.shape[1],
+            *[[title, ""] + [agg(self[col], stat) for col in self]
+              for title, stat in kwargs.items()],
             caption=caption
             )
 
