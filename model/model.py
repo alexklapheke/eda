@@ -77,11 +77,13 @@ class DBSCAN(BaseEstimator, ClusterMixin):
         if not self.is_fit:
             raise NotFittedError("You must fit the model to data first!")
 
-    def _metric(self, x1, x2):
-        """Distance metric of order self.p"""
-        return (np.sum(np.abs((x1-x2)**self.p), axis=(x1.ndim-1)))**(1/self.p)
+    @staticmethod
+    def _metric(x1, x2, p=2):
+        """Distance metric of order p"""
+        return (np.sum(np.abs((x1-x2)**p), axis=(x1.ndim-1)))**(1/p)
 
-    def _k(self, key):
+    @staticmethod
+    def _k(key):
         """Use a numpy array as a dictionary key"""
         return hash(key.data.tobytes())
 
@@ -96,39 +98,39 @@ class DBSCAN(BaseEstimator, ClusterMixin):
                 continue
 
             # Find neighbors
-            all_neighbors = self._metric(X, p) < self.eps
-            new_neighbors = np.copy(all_neighbors)
+            neighbors = self._metric(X, p, self.p) < self.eps
 
             # Assign to current cluster, or to "noise cluster"
-            if X[all_neighbors].shape[0] >= self.min_samples:
+            if X[neighbors].shape[0] >= self.min_samples:
                 cluster += 1
                 self._labels[self._k(p)] = cluster
             else:
                 self._labels[self._k(p)] = self.noise_label
                 continue
 
-            while X[new_neighbors].shape[0] > 0:
+            while X[neighbors].shape[0] > 0:
+                new_neighbors = np.repeat(False, neighbors.shape)
 
-                # Add new neighbors to our running list
-                all_neighbors |= new_neighbors
-
-                # Assign them to current cluster
-                for q in X[new_neighbors]:
+                # Assign new neighbors to current cluster
+                for q in X[neighbors]:
                     if self._k(q) not in self._labels or self._k(q) == -1:
                         self._labels[self._k(q)] = cluster
-                        new_neighbors |= self._metric(X, q) < self.eps
+                        new_neighbors |= self._metric(X, q, self.p) < self.eps
 
-                # Remove previously classified
-                new_neighbors &= ~all_neighbors
+                # Add to running list and remove from "new" list
+                neighbors = new_neighbors.copy()
 
         self.is_fit = True
         self.n_clusters_ = cluster + 1
         self.labels_ = self.predict(X)
-        self.silhouette_ = silhouette_score(X, self.labels_)
+        try:
+            self.silhouette_ = silhouette_score(X, self.labels_)
+        except ValueError:  # Only one cluster
+            self.silhouette_ = np.nan
 
     def predict(self, X):
         self._check_fit()
-        return [self._labels[self._k(p)] for p in np.array(X)]
+        return np.array([self._labels[self._k(p)] for p in np.array(X)])
 
     def score(self):
         self._check_fit()
