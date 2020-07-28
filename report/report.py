@@ -172,9 +172,12 @@ def _data_range(df):
     return _range
 
 
-def agg(col, fun):
+def safe_agg(col, fun):
     try:
-        return "{:n}".format(col.agg(fun))
+        if is_datetime64_any_dtype(col):
+            return col.agg(fun).strftime("%b %_d, %Y")
+        else:
+            return "{:n}".format(col.agg(fun))
     except TypeError:
         return ""
 
@@ -213,7 +216,7 @@ def data_dictionary(self, **kwargs):
             ["Range",          ""] + _data_range(self),
             ["Distribution",   ""] + [self.sparkline(col, hist=True)
                                       for col in self],
-            *[[title, ""] + [agg(self[col], stat) for col in self]
+            *[[title, ""] + [safe_agg(self[col], stat) for col in self]
               for title, stat in kwargs.items()],
             caption=caption
             )
