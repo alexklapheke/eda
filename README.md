@@ -4,7 +4,7 @@ EDA is a small miscellany of tools to facilitate exploratory data analysis and o
 
 To install, place in a directory such as `~/bin/python`, then add the following line to your `~/.bashrc`:
 
-``` {.bash}
+```bash
 export PYTHONPATH="${PYTHONPATH}:$HOME/bin/python"
 ```
 
@@ -48,7 +48,7 @@ Like `summary`, this module adds methods to Pandas data frames.
 * `series.sparkline()`, `df.sparkline(col)`: Produce a sparkline of the given series or column of the data frame.
 * `df.data_dictionary()`: Return a data dictionary in GitHub-flavored markdown, suitable for inclusion in a GitHub README. In an iPython environment, such as a Jupyter notebook, you can pretty-print this:
 
-	```
+	```python
 	from IPython.display import Markdown
 	display(Markdown(fio.data_dictionary()))
 	```
