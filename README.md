@@ -50,5 +50,5 @@ Like `summary`, this module adds methods to Pandas data frames.
 
 	```python
 	from IPython.display import Markdown
-	display(Markdown(fio.data_dictionary()))
+	display(Markdown(df.data_dictionary()))
 	```
