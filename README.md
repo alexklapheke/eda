@@ -22,7 +22,8 @@ This module adds methods to Pandas data frames for exploring datasets. It is the
 * `df.missing_by(col)`: Like `missing`, but grouped by column `col`.
 * `df.missing_map()`: Show a heatmap of missing data to uncover patterns.
 * `df.misordered(col1, col2, ...)`: Show rows which are in the wrong order; e.g., `df.misordered("start", "end")` will show rows in which the end date precedes the start date.
-* `benford(iterable)`: Given an iterable of numerics, show whether the first digits conform to [Benford's Law](https://en.wikipedia.org/wiki/Benford%27s_law).
+* `benford(iterable)`: Given an iterable of numerics, give the proportion of first digits to check conformity to [Benford's Law](https://en.wikipedia.org/wiki/Benford%27s_law). You can feed the input into `sparkline` (be sure to set `width=9`). The results should look like `█▅▃▂▂▂▁▁▁`.
+* `benford_plot(iterable)`: Show a bar plot comparing the proportion of first digits to those predicted by Benford's Law.
 
 ## `accuracy` module
 

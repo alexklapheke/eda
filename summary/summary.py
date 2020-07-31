@@ -145,12 +145,21 @@ def misordered(self, *cols, ascending=True, allow_equal=True):
     return self.loc[indices, cols]
 
 
-def benford(iterable, ax=None, *args, **kwargs):
+def _get_first_digit(x):
+    return int(str(x).lstrip('0.-')[0])
+
+
+def benford(iterable):
+    digits = np.arange(1, 10)
+    return [(np.array(list(map(_get_first_digit, iterable))) == n).mean()
+            for n in digits]
+
+
+def benford_plot(iterable, ax=None, *args, **kwargs):
     digits = np.arange(1, 10)
 
-    first_digits = np.array(list(map(lambda x: int(str(x)[0]), iterable)))
     predicted = [np.log10(1 + 1/n) for n in digits]
-    actual = [(first_digits == n).mean() for n in digits]
+    actual = benford(iterable)
 
     if not ax:
         ax = plt.gca()

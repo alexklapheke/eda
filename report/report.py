@@ -177,8 +177,9 @@ def safe_agg(col, fun):
         if is_datetime64_any_dtype(col):
             return col.agg(fun).strftime("%b %_d, %Y")
         else:
-            return "{:n}".format(col.agg(fun))
-    except TypeError:
+            out = col.agg(fun)
+            return out if type(out) is str else "{:n}".format(col.agg(fun))
+    except (TypeError, ValueError):
         return ""
 
 
