@@ -27,6 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import numpy as np
 from pandas import DataFrame, concat
 from numpy import logical_or
 import operator
@@ -142,6 +143,36 @@ def misordered(self, cols, ascending=True, allow_equal=True):
     mask = [op(self[a], self[b]) for a, b in zip(cols, cols[1:])]
     indices = self[logical_or.reduce(mask)].index
     return self.loc[indices, cols]
+
+
+def benford(iterable, ax=None, *args, **kwargs):
+    digits = np.arange(1, 10)
+
+    first_digits = np.array(list(map(lambda x: int(str(x)[0]), iterable)))
+    predicted = [np.log10(1 + 1/n) for n in digits]
+    actual = [(first_digits == n).mean() for n in digits]
+
+    if not ax:
+        ax = plt.gca()
+
+    ax.bar(digits - 1/6, predicted,
+           width=1/3,
+           align="center",
+           color="C0",
+           label="Predicted",
+           *args, **kwargs
+           )
+    ax.bar(digits + 1/6, actual,
+           width=1/3,
+           align="center",
+           color="C1",
+           label="Actual",
+           *args, **kwargs
+           )
+    ax.set_xticks(digits)
+    ax.legend()
+
+    return ax
 
 
 DataFrame.summary = summary

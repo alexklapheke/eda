@@ -22,6 +22,7 @@ This module adds methods to Pandas data frames for exploring datasets. It is the
 * `df.missing_by(col)`: Like `missing`, but grouped by column `col`.
 * `df.missing_map()`: Show a heatmap of missing data to uncover patterns.
 * `df.misordered([col1, col2, ...])`: Show rows which are in the wrong order; for example, `df.misordered(["start_date", "end_date"])` will show rows in which the end date precedes the start date.
+* `benford(iterable)`: Given an iterable of numerics, show whether the first digits conform to [Benford's Law](https://en.wikipedia.org/wiki/Benford%27s_law).
 
 ## `accuracy` module
 
@@ -38,13 +39,13 @@ This module contains standalone functions for evaluating models.
 
 This module is for machine learning.
 
-* `DBSCAN()`: an implementation of the [DBSCAN](https://en.wikipedia.org/wiki/DBSCAN) clustering algorithm, that doesn't require the high [memory overhead](https://stackoverflow.com/questions/16381577/scikit-learn-dbscan-memory-usage) of scikit-learn's implementation (worst case O(n²); can easily use several GB of memory). Uses sklearn's `.fit()`/`.predict()` convention.
+* `DBSCAN()`: an implementation of the [DBSCAN](https://en.wikipedia.org/wiki/DBSCAN) clustering algorithm, that doesn't require the high [memory overhead](https://stackoverflow.com/questions/16381577/scikit-learn-dbscan-memory-usage) of scikit-learn's implementation (sklearn computes a distance matrix which is O(n²) in space in the number of data points and can easily use several GB of memory). Uses sklearn's `.fit()`/`.predict()` convention and cen be used in [pipelines](https://scikit-learn.org/stable/modules/compose.html#pipeline).
 
 ## `report` module
 
 Like `summary`, this module adds methods to Pandas data frames.
 
-* `sparkline(series)`: Produce a [sparkline](https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0001OR&topic_id=1) given an iterable of numerics or date/time objects.
+* `sparkline(iterable)`: Produce a [sparkline](https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0001OR&topic_id=1) given an iterable of numerics or date/time objects. For example, `sparkline(range(8))` produces `▁▂▃▄▅▆▇█`.
 * `series.sparkline()`, `df.sparkline(col)`: Produce a sparkline of the given series or column of the data frame.
 * `df.data_dictionary()`: Return a data dictionary in GitHub-flavored markdown, suitable for inclusion in a GitHub README. In an iPython environment, such as a Jupyter notebook, you can pretty-print this:
 
@@ -52,3 +53,14 @@ Like `summary`, this module adds methods to Pandas data frames.
 	from IPython.display import Markdown
 	display(Markdown(df.data_dictionary()))
 	```
+
+	The output will look like the following:
+
+	| Column         | Type      | Missing values | Range     | Distribution |
+	|----------------|-----------|----------------|-----------|--------------|
+	| `Sepal length` | `float64` | 0 (0%)         | 4.3 – 7.9 | ▃▇▅█▅█▆▃▂▃   |
+	| `Sepal width`  | `float64` | 0 (0%)         | 2 – 4.4   | ▂▂▅▆█▇▃▃▁▁   |
+	| `Petal length` | `float64` | 0 (0%)         | 1 – 6.9   | █▃▁▂▃▆▆▄▃▂   |
+	| `Petal width`  | `float64` | 0 (0%)         | 0.1 – 2.5 | █▂▁▂▂▇▂▅▃▃   |
+	| `Species`      | `object`  | 0 (0%)         |           |              |
+
