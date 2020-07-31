@@ -117,7 +117,7 @@ def missing_map(self, figsize=(8, 5), *args, **kwargs):
     return ax
 
 
-def misordered(self, cols, ascending=True, allow_equal=True):
+def misordered(self, *cols, ascending=True, allow_equal=True):
     """Find rows of a dataframe in which the data are in the wrong order. For
        example, in a data frame `df` that looks like:
 
