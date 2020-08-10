@@ -47,6 +47,7 @@ def sparkline(series, width=10, plottype="bar", hist=False):
         "line":   "⎽⎼─⎻⎺",
         "shade": "░▒▓█"
     }
+    missing = "\u00A0"  # Character to use when data is missing
 
     try:
         chars = plottypes[plottype]
@@ -107,8 +108,7 @@ def sparkline(series, width=10, plottype="bar", hist=False):
             except FloatingPointError:
                 level = 0
 
-            # If the data is missing, replace with a *nonbreaking* space
-            graph += "\u00A0" if np.isnan(level) else chars[int(round(level))]
+            graph += missing if np.isnan(level) else chars[int(round(level))]
 
     return graph
 
@@ -174,13 +174,16 @@ def _data_range(df):
 
 def safe_agg(col, fun):
     try:
-        if is_datetime64_any_dtype(col):
-            return col.agg(fun).strftime("%b %_d, %Y")
-        else:
-            out = col.agg(fun)
-            return out if type(out) is str else "{:n}".format(col.agg(fun))
+        out = col.agg(fun)
     except (TypeError, ValueError):
-        return ""
+        out = ""
+
+    if is_datetime64_any_dtype(out):
+        return col.agg(fun).strftime("%b %_d, %Y")
+    elif is_numeric_dtype(out):
+        return "{:n}".format(col.agg(fun))
+    else:
+        return out
 
 
 def data_dictionary(self, **kwargs):
