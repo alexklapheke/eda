@@ -158,6 +158,11 @@ def test_LINE(y_true, y_pred):
 
     # Define our residuals
     resids = y_true - y_pred
+    student = resids / resids.std()
+
+    # Define outliers as studentized residuals e_i s.t. |e_i| >= 3
+    outlier = student.abs() >= 3
+    outlier_cmap = list(map(lambda x: "C" + str(int(x)), outlier))
 
     # Set up bins for graphing normal distribution
     bins = np.arange(
@@ -171,7 +176,7 @@ def test_LINE(y_true, y_pred):
     ax.set_title("Is the data [L]inear?")
     ax.set_xlabel("True values")
     ax.set_ylabel("Predicted values")
-    ax.scatter(y_true, y_pred)
+    ax.scatter(y_true, y_pred, marker=".")
     ax.plot((min(y_true), max(y_true)),
             (min(y_pred), max(y_pred)), color="red")
 
@@ -179,8 +184,8 @@ def test_LINE(y_true, y_pred):
     ax = fig.add_subplot(2, 2, 2)
     ax.set_title("Is the error [I]ndependent along the x-axis?")
     ax.set_xlabel("Series")
-    ax.set_ylabel("Residuals")
-    ax.scatter(range(len(resids)), resids)
+    ax.set_ylabel("Studentized residuals")
+    ax.scatter(range(len(student)), student, marker=".", c=outlier_cmap)
     ax.axhline(0, color="gray")
 
     # Third test plot
@@ -194,8 +199,8 @@ def test_LINE(y_true, y_pred):
     ax = fig.add_subplot(2, 2, 4)
     ax.set_title("Is the variance of error [E]qual everywhere?")
     ax.set_xlabel("Predicted values")
-    ax.set_ylabel("Residuals")
-    ax.scatter(y_pred, resids)
+    ax.set_ylabel("Studentized residuals")
+    ax.scatter(y_pred, student, marker=".", c=outlier_cmap)
     ax.axhline(0, color="gray")
 
     plt.tight_layout()
