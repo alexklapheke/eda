@@ -158,22 +158,11 @@ def _markdowntable(*columns, caption=""):
     return table
 
 
-def _data_range(df):
-    _range = []
+def _data_range(col):
+    col_min = _safe_agg(col, "min")
+    col_max = _safe_agg(col, "max")
 
-    for colname in df.columns:
-        col = df[colname]
-
-        if is_datetime64_any_dtype(col):
-            _range.append(col.min().strftime("%b %_d, %Y") + " – " +
-                          col.max().strftime("%b %_d, %Y"))
-        elif is_numeric_dtype(col):
-            _range.append("{:n}".format(col.min()) + " – " +
-                          "{:n}".format(col.max()))
-        else:
-            _range.append("")
-
-    return _range
+    return col_min + " – " + col_max if col_min and col_max else ""
 
 
 def _safe_agg(col, fun):
@@ -185,11 +174,16 @@ def _safe_agg(col, fun):
     except (TypeError, ValueError):
         out = ""
 
-    if is_datetime64_any_dtype(out):
-        return out.strftime("%b %_d, %Y")
+    # Some functions implicitly convert between datetime types ¯\_(ツ)_/¯
+    if is_datetime64_any_dtype(col) or is_datetime64_any_dtype(out):
+        try:
+            return out.strftime("%b %_d, %Y")
+        except AttributeError:
+            return out
     elif is_numeric_dtype(out):
         return "{:n}".format(out)
     else:
+        print(type(out))
         return out
 
 
@@ -224,7 +218,7 @@ def data_dictionary(self, **kwargs):
             ["Type",           ""] + list(map("`{}`".format, self.dtypes)),
             ["Missing values", ""] + ["{:,} ({:.0%})".format(no, pct)
                                       for no, pct in missing_zip],
-            ["Range",          ""] + _data_range(self),
+            ["Range",          ""] + [_data_range(self[col]) for col in self],
             ["Distribution",   ""] + [self.sparkline(col, hist=True)
                                       for col in self],
             *[[title, ""] + [_safe_agg(self[col], stat) for col in self]
