@@ -153,6 +153,10 @@ def test_LINE(y_true, y_pred):
         test_LINE(y, lr.predict(X))
     """
 
+    # Cast arrays to use efficiently with numpy
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
     # Set up graphs
     fig = plt.figure(figsize=(12, 8))
 
@@ -161,7 +165,7 @@ def test_LINE(y_true, y_pred):
     student = resids / resids.std()
 
     # Define outliers as studentized residuals e_i s.t. |e_i| >= 3
-    outlier = student.abs() >= 3
+    outlier = np.abs(student) >= 3
     outlier_cmap = list(map(lambda x: "C" + str(int(x)), outlier))
 
     # Set up bins for graphing normal distribution
