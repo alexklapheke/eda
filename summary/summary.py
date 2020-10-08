@@ -148,6 +148,11 @@ def _get_first_digit(x):
 
 
 def benford(iterable):
+    try:
+        iterable = list(map(int, iterable))
+    except (TypeError, ValueError):
+        return []
+
     digits = np.arange(1, 10)
     return [(np.array(list(map(_get_first_digit, iterable))) == n).mean()
             for n in digits]

@@ -31,6 +31,7 @@ from pandas import DataFrame, Series
 from pandas.api.types import is_numeric_dtype, is_datetime64_any_dtype
 from re import match
 import numpy as np
+from eda.summary import benford
 
 
 def sparkline(series, width=10, plottype="bar", hist=False):
@@ -39,6 +40,9 @@ def sparkline(series, width=10, plottype="bar", hist=False):
     that fraction of the data. Allowed `plottype`s are "bar", "line",
     and "shade". If `hist` is true, plot a histogram of the data in
     `width` bins."""
+
+    if len(series) == 0:
+        return ""
 
     np.seterr('raise')
 
@@ -172,16 +176,19 @@ def _data_range(df):
     return _range
 
 
-def safe_agg(col, fun):
+def _safe_agg(col, fun):
+    if fun == "benford":
+        return sparkline(benford(col), width=9)
+
     try:
         out = col.agg(fun)
     except (TypeError, ValueError):
         out = ""
 
     if is_datetime64_any_dtype(out):
-        return col.agg(fun).strftime("%b %_d, %Y")
+        return out.strftime("%b %_d, %Y")
     elif is_numeric_dtype(out):
-        return "{:n}".format(col.agg(fun))
+        return "{:n}".format(out)
     else:
         return out
 
@@ -220,7 +227,7 @@ def data_dictionary(self, **kwargs):
             ["Range",          ""] + _data_range(self),
             ["Distribution",   ""] + [self.sparkline(col, hist=True)
                                       for col in self],
-            *[[title, ""] + [safe_agg(self[col], stat) for col in self]
+            *[[title, ""] + [_safe_agg(self[col], stat) for col in self]
               for title, stat in kwargs.items()],
             caption=caption
             )
