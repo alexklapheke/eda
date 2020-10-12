@@ -159,8 +159,11 @@ def _markdowntable(*columns, caption=""):
 
 
 def _data_range(col):
-    col_min = _safe_agg(col, "min")
-    col_max = _safe_agg(col, "max")
+    if col.dtype == "O":
+        return ""
+
+    col_min = str(_safe_agg(col, "min"))
+    col_max = str(_safe_agg(col, "max"))
 
     return col_min + " – " + col_max if col_min and col_max else ""
 
@@ -183,7 +186,6 @@ def _safe_agg(col, fun):
     elif is_numeric_dtype(out):
         return "{:n}".format(out)
     else:
-        print(type(out))
         return out
 
 
