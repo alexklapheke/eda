@@ -42,6 +42,13 @@ This module is for machine learning.
 
 * `DBSCAN()`: an implementation of the [DBSCAN](https://en.wikipedia.org/wiki/DBSCAN) clustering algorithm, that doesn't require the high [memory overhead](https://stackoverflow.com/questions/16381577/scikit-learn-dbscan-memory-usage) of scikit-learn's implementation (sklearn computes a distance matrix which is O(n²) in space in the number of data points and can easily use several GB of memory). Uses sklearn's `.fit()`/`.predict()` convention and cen be used in [pipelines](https://scikit-learn.org/stable/modules/compose.html#pipeline).
 
+## `nlp` module
+
+This module provides some convenience functions for dealing with natural language.
+
+* `tf_idf`: Compute [tf-idf](https://en.wikipedia.org/wiki/Tf-idf) score.
+* `logodds_dirichlet`: Compute [log-odds ratio, uninformative Dirichlet prior](https://languagelog.ldc.upenn.edu/nll/?p=10073).
+
 ## `report` module
 
 Like `summary`, this module adds methods to Pandas data frames.
