@@ -30,7 +30,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import numpy as np
 import matplotlib.pyplot as plt
 from pandas import DataFrame
-from seaborn import heatmap
 
 
 def accuracy_metrics(y_true, y_pred, f_score=False):
@@ -96,6 +95,8 @@ def multiaccuracy_heatmap(y_true, y_pred, *args, **kwargs):
     Example usage:
 
     multiaccuracy_heatmap(y, model.predict(X), cmap="viridis");"""
+    from seaborn import heatmap
+
     return heatmap(multiaccuracy(y_true, y_pred,
                                  normalize=True,
                                  totals=False),

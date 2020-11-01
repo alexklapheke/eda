@@ -29,10 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import numpy as np
 from pandas import DataFrame
-from numpy import logical_or
-import operator
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
 from eda.report import sparkline
 
 
@@ -130,6 +127,7 @@ def missing_by(self, col, *args, **kwargs):
 def missing_map(self, figsize=(8, 5), *args, **kwargs):
     """Display heatmap of missing data to uncover patterns. Note that the
     columns of the dataframe are shown on the y-axis."""
+    from matplotlib.colors import LinearSegmentedColormap
     cmap = LinearSegmentedColormap.from_list("cmap", ["#00000000", "red"])
 
     fig, ax = plt.subplots(figsize=figsize)
@@ -161,6 +159,7 @@ def misordered(self, *cols, ascending=True, allow_equal=True):
 
        `ascending`: Specifiy whether the *proper* order of columns is ascending
        `allow_equal`: Allow values in adjacent columns to be equal"""
+    import operator
 
     if ascending:
         op = operator.gt if allow_equal else operator.ge
@@ -168,7 +167,7 @@ def misordered(self, *cols, ascending=True, allow_equal=True):
         op = operator.lt if allow_equal else operator.le
 
     mask = [op(self[a], self[b]) for a, b in zip(cols, cols[1:])]
-    indices = self[logical_or.reduce(mask)].index
+    indices = self[np.logical_or.reduce(mask)].index
     return self.loc[indices, cols]
 
 

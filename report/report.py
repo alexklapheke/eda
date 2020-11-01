@@ -28,7 +28,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from pandas import DataFrame, Series
-from pandas.api.types import is_numeric_dtype, is_datetime64_any_dtype
 import numpy as np
 
 
@@ -38,6 +37,7 @@ def sparkline(series, width=10, plottype="bar", hist=False):
     that fraction of the data. Allowed `plottype`s are "bar", "line",
     and "shade". If `hist` is true, plot a histogram of the data in
     `width` bins."""
+    from pandas.api.types import is_numeric_dtype, is_datetime64_any_dtype
 
     if len(series) == 0:
         return ""
