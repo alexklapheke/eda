@@ -28,34 +28,66 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import numpy as np
-from pandas import DataFrame, concat
+from pandas import DataFrame
 from numpy import logical_or
 import operator
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
+from eda.report import sparkline
 
 
-def summary(self):
+def _data_range(col):
+    if col.dtype == "O":
+        return ""
+
+    col_min = str(_safe_agg(col, "min"))
+    col_max = str(_safe_agg(col, "max"))
+
+    return col_min + " – " + col_max if col_min and col_max else ""
+
+
+def _safe_agg(col, fun):
+    from pandas.api.types import is_numeric_dtype, is_datetime64_any_dtype
+
+    if fun == "benford":
+        return sparkline(benford(col), width=9)
+
+    try:
+        out = col.agg(fun)
+    except (TypeError, ValueError):
+        out = ""
+
+    # Some functions implicitly convert between datetime types ¯\_(ツ)_/¯
+    if is_datetime64_any_dtype(col) or is_datetime64_any_dtype(out):
+        try:
+            return out.strftime("%b %_d, %Y")
+        except AttributeError:
+            return out
+    elif is_numeric_dtype(out):
+        return "{:n}".format(out)
+    else:
+        return out
+
+
+def summary(self, **kwargs):
     """Describe the columns of a data frame with
     excerpted values, types, and summary statistics."""
-    return concat([
-            self.head(5).T,
-            DataFrame({"type": self.dtypes}),
-            DataFrame({"pct_missing": self.isna().mean() * 100}),
-            self.describe(percentiles=[0.5]).drop("count").T
-        ], axis=1)
+    missing = self.isna().sum()
 
+    missing_zip = zip(missing, missing / self.shape[0])
 
-def summary_by(self, col):
-    """Describe the columns of a data frame, grouped by column
-    `col` with excerpted values, types, and summary statistics."""
-    dfg = self.groupby(col)
-    return concat([
-            dfg.first().T.add_prefix("head_"),
-            dfg.dtypes.T.add_prefix("type_"),
-            dfg.apply(lambda x: x.isna().mean() * 100)
-               .T.add_prefix("pct_missing_")
-        ], axis=1)
+    df = DataFrame({
+        "Type": self.dtypes,
+        "Missing values": ["{:,} ({:.0%})".format(no, pct)
+                           for no, pct in missing_zip],
+        "Range": [_data_range(self[col]) for col in self],
+        "Distribution": [self.sparkline(col, hist=True) for col in self],
+        **{title: [_safe_agg(self[col], stat) for col in self]
+           for title, stat in kwargs.items()}
+    }, index=self.columns)
+
+    df.index.name = "Column"
+    return df
 
 
 def missing(self, *args, **kwargs):
@@ -188,7 +220,6 @@ def benford_plot(iterable, ax=None, *args, **kwargs):
 
 
 DataFrame.summary = summary
-DataFrame.summary_by = summary_by
 DataFrame.missing = missing
 DataFrame.missing_by = missing_by
 DataFrame.missing_map = missing_map

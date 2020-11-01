@@ -29,9 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from pandas import DataFrame, Series
 from pandas.api.types import is_numeric_dtype, is_datetime64_any_dtype
-from re import match
 import numpy as np
-from eda.summary import benford
 
 
 def sparkline(series, width=10, plottype="bar", hist=False):
@@ -133,60 +131,29 @@ def _sparkline_dataframe(self, col, *args, **kwargs):
     return sparkline(self[col], *args, **kwargs)
 
 
-def _markdowntable(*columns, caption=""):
+def _to_markdown(df):
     """Format list of objects as row in markdown table"""
-    columns = list(filter(bool, columns))
+    df = df.astype(str)
 
-    # List of widths of each column
-    widths = [max(len(str(cell)) for cell in col) for col in columns]
+    # List of character widths of each column
+    widths = [max(len(col), *(len(cell) for cell in df[col]))
+              for col in df.columns]
 
-    table = caption + "\n\n"
+    # Header row
+    table = " ".join(["| {:{w}}".format(str(cell), w=w)
+                      for cell, w in zip(df.columns, widths)]) + " |\n"
 
-    for row in zip(*columns):
-        # Format row elements, separated by pipes
-        row_str = " ".join(["| {:{w}}".format(str(cell), w=w)
-                            for cell, w in zip(row, widths)]) + " |\n"
+    # Separator row. GitHub markdown calls for separators
+    # that are only dashes and pipes, no plus signs:
+    # <https://github.github.com/gfm/#tables-extension->
+    table += "|" + "|".join(["-"*(w+2) for w in widths]) + "|\n"
 
-        # Turn empty rows into separator rows. GitHub markdown calls
-        # for separators that are only dashes and pipes, no plus
-        # signs: <https://github.github.com/gfm/#tables-extension->
-        if match("^[| ]+$", row_str):
-            row_str = row_str.replace(" ", "-")
-
-        table += row_str
+    # Body rows
+    table += "\n".join([" ".join(["| {:{w}}".format(str(cell), w=w)
+                        for cell, w in zip(row, widths)]) + " |"
+                        for _, row in df.iterrows()])
 
     return table
-
-
-def _data_range(col):
-    if col.dtype == "O":
-        return ""
-
-    col_min = str(_safe_agg(col, "min"))
-    col_max = str(_safe_agg(col, "max"))
-
-    return col_min + " – " + col_max if col_min and col_max else ""
-
-
-def _safe_agg(col, fun):
-    if fun == "benford":
-        return sparkline(benford(col), width=9)
-
-    try:
-        out = col.agg(fun)
-    except (TypeError, ValueError):
-        out = ""
-
-    # Some functions implicitly convert between datetime types ¯\_(ツ)_/¯
-    if is_datetime64_any_dtype(col) or is_datetime64_any_dtype(out):
-        try:
-            return out.strftime("%b %_d, %Y")
-        except AttributeError:
-            return out
-    elif is_numeric_dtype(out):
-        return "{:n}".format(out)
-    else:
-        return out
 
 
 def data_dictionary(self, **kwargs):
@@ -204,29 +171,15 @@ def data_dictionary(self, **kwargs):
 
     will create mean and median columns, and a blank "Description" column to be
     filled in manually by the user."""
+    summary = self.summary(**kwargs).reset_index()
 
-    missing = self.isna().sum()
-    missing_total = missing.sum()
+    missing_total = self.isna().sum().sum()
     s = "" if missing_total == 1 else "s"
-
-    missing_zip = zip(missing, missing / self.shape[0])
-
     caption = f"Data frame, {self.shape[0]:,} rows with " +\
               f"{missing_total:,} missing value{s}:"
 
     # The row of empty strings will be turned into a separator line
-    return _markdowntable(
-            ["Column",         ""] + list(map("`{}`".format, self.columns)),
-            ["Type",           ""] + list(map("`{}`".format, self.dtypes)),
-            ["Missing values", ""] + ["{:,} ({:.0%})".format(no, pct)
-                                      for no, pct in missing_zip],
-            ["Range",          ""] + [_data_range(self[col]) for col in self],
-            ["Distribution",   ""] + [self.sparkline(col, hist=True)
-                                      for col in self],
-            *[[title, ""] + [_safe_agg(self[col], stat) for col in self]
-              for title, stat in kwargs.items()],
-            caption=caption
-            )
+    return caption + "\n\n" + _to_markdown(summary)
 
 
 DataFrame.data_dictionary = data_dictionary
