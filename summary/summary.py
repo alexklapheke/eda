@@ -67,8 +67,17 @@ def _safe_agg(col, fun):
 
 
 def summary(self, **kwargs):
-    """Describe the columns of a data frame with
-    excerpted values, types, and summary statistics."""
+    """Generate a summary of a given data frame, including missing data and
+    histograms of numeric columns.
+
+    You can add any aggregation columns with the syntax Title=Function. Any
+    function that can be passed to pandas.DataFrame.agg can be passed here.
+    For example:
+
+        df.summary(Mean=np.mean, Median="median")
+
+    will create mean and median columns. You can also pass the custom
+    function "benford" to check conformity to Benford's Law."""
     missing = self.isna().sum()
 
     missing_zip = zip(missing, missing / self.shape[0])

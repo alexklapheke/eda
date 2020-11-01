@@ -16,8 +16,7 @@ You should then be able to `import eda` in Python applications.
 
 This module adds methods to Pandas data frames for exploring datasets. It is therefore only usable if you `import pandas`. It includes the following methods:
 
-* `df.summary()`: Print a summary of the data frame `df`, including the first few rows, missing data, and summary statistics.
-* `df.summary_by(col)`: Like `summary`, but grouped by column `col`.
+* `df.summary()`: Print a summary of the data frame `df`, including missing data and histograms of numeric columns. A good jumping-off point for exploring a new dataset.
 * `df.missing()`: Show a bar plot of missing data by column.
 * `df.missing_by(col)`: Like `missing`, but grouped by column `col`.
 * `df.missing_map()`: Show a heatmap of missing data to uncover patterns.
@@ -40,7 +39,7 @@ This module contains standalone functions for evaluating models.
 
 This module is for machine learning.
 
-* `DBSCAN()`: an implementation of the [DBSCAN](https://en.wikipedia.org/wiki/DBSCAN) clustering algorithm, that doesn't require the high [memory overhead](https://stackoverflow.com/questions/16381577/scikit-learn-dbscan-memory-usage) of scikit-learn's implementation (sklearn computes a distance matrix which is O(n²) in space in the number of data points and can easily use several GB of memory). Uses sklearn's `.fit()`/`.predict()` convention and cen be used in [pipelines](https://scikit-learn.org/stable/modules/compose.html#pipeline).
+* `DBSCAN()`: an implementation of the [DBSCAN](https://en.wikipedia.org/wiki/DBSCAN) clustering algorithm, that doesn't require the high [memory overhead](https://stackoverflow.com/questions/16381577/scikit-learn-dbscan-memory-usage) of scikit-learn's implementation (sklearn computes a distance matrix which is O(n²) in space in the number of data points and can easily use several GB of memory). Uses sklearn's `.fit()`/`.predict()` convention and can be used in [pipelines](https://scikit-learn.org/stable/modules/compose.html#pipeline).
 
 ## `nlp` module
 
