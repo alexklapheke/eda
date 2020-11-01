@@ -54,20 +54,4 @@ Like `summary`, this module adds methods to Pandas data frames.
 
 * `sparkline(iterable)`: Produce a [sparkline](https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0001OR&topic_id=1) given an iterable of numerics or date/time objects. For example, `sparkline(range(8))` produces `▁▂▃▄▅▆▇█`.
 * `series.sparkline()`, `df.sparkline(col)`: Produce a sparkline of the given series or column of the data frame.
-* `df.data_dictionary()`: Return a data dictionary in GitHub-flavored markdown, suitable for inclusion in a GitHub README. In an iPython environment, such as a Jupyter notebook, you can pretty-print this:
-
-	```python
-	from IPython.display import Markdown
-	display(Markdown(df.data_dictionary()))
-	```
-
-	The output will look like the following:
-
-	| Column         | Type      | Missing values | Range     | Distribution |
-	|----------------|-----------|----------------|-----------|--------------|
-	| `Sepal length` | `float64` | 0 (0%)         | 4.3 – 7.9 | ▃▇▅█▅█▆▃▂▃   |
-	| `Sepal width`  | `float64` | 0 (0%)         | 2 – 4.4   | ▂▂▅▆█▇▃▃▁▁   |
-	| `Petal length` | `float64` | 0 (0%)         | 1 – 6.9   | █▃▁▂▃▆▆▄▃▂   |
-	| `Petal width`  | `float64` | 0 (0%)         | 0.1 – 2.5 | █▂▁▂▂▇▂▅▃▃   |
-	| `Species`      | `object`  | 0 (0%)         |           |              |
-
+* `df.data_dictionary()`: Return a data dictionary in GitHub-flavored markdown, suitable for inclusion in a GitHub README (this is a wrapper for `summary.summary()`).
