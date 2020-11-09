@@ -133,11 +133,11 @@ def missing_by(self, col, *args, **kwargs):
            )
 
 
-def missing_map(self, figsize=(8, 5), *args, **kwargs):
+def missing_map(self, figsize=(8, 5), color="red", *args, **kwargs):
     """Display heatmap of missing data to uncover patterns. Note that the
     columns of the dataframe are shown on the y-axis."""
     from matplotlib.colors import LinearSegmentedColormap
-    cmap = LinearSegmentedColormap.from_list("cmap", ["#00000000", "red"])
+    cmap = LinearSegmentedColormap.from_list("cmap", ["#00000000", color])
 
     fig, ax = plt.subplots(figsize=figsize)
     ax.pcolormesh(self.T.isna(), cmap=cmap)
