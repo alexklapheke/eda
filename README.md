@@ -2,7 +2,9 @@ EDA is a small miscellany of tools to facilitate exploratory data analysis and o
 
 # Installation
 
-To install, place in a directory such as `~/bin/python`, then add the following line to your `~/.bashrc`:
+To install with pip: `pip install git+https://github.com/alexklapheke/eda.git`.
+
+To install manually, place in a directory such as `~/bin/python`, then add the following line to your `~/.bashrc`:
 
 ```bash
 export PYTHONPATH="${PYTHONPATH}:$HOME/bin/python"
