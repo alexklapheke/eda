@@ -68,9 +68,9 @@ def accuracy_metrics(y_true, y_pred, f_score=False):
 
     # Compile into data frame
     return DataFrame([
-            [tp, fn, sens],
-            [fp, tn, spec],
-            [ppv, npv, acc]],
+            [tp, fp, ppv],
+            [fn, tn, npv],
+            [sens, spec, acc]],
             columns=["Cond P", "Cond N", "PPV/NPV"],
             index=["Test P", "Test N", "Sens/Spec"])
 
