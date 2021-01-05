@@ -12,9 +12,7 @@ setup(
     install_requires=[
         "matplotlib",
         "numpy",
-        "operator",
         "pandas",
-        "seaborn",
         "sklearn",
     ]
 )
