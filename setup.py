@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name="eda",
@@ -8,7 +8,14 @@ setup(
     author="Alex Klapheke",
     author_email="alexklapheke@gmail.com",
     license="MIT license",
-    packages=find_packages(include=["eda", "eda.*"]),
+    packages=[
+        "eda",
+        "eda.accuracy",
+        "eda.model",
+        "eda.nlp",
+        "eda.report",
+        "eda.summary",
+    ],
     # install_requires=[
     #     "matplotlib",
     #     "numpy",
