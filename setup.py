@@ -9,10 +9,10 @@ setup(
     author_email="alexklapheke@gmail.com",
     license="MIT license",
     packages=find_packages(include=["eda", "eda.*"]),
-    install_requires=[
-        "matplotlib",
-        "numpy",
-        "pandas",
-        "sklearn",
-    ]
+    # install_requires=[
+    #     "matplotlib",
+    #     "numpy",
+    #     "pandas",
+    #     "sklearn",
+    # ]
 )
