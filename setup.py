@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name="eda",
@@ -8,5 +8,13 @@ setup(
     author="Alex Klapheke",
     author_email="alexklapheke@gmail.com",
     license="MIT license",
-    packages=["eda"],
+    packages=find_packages(include=["eda", "eda.*"]),
+    install_requires=[
+        "matplotlib",
+        "numpy",
+        "operator",
+        "pandas",
+        "seaborn",
+        "sklearn",
+    ]
 )

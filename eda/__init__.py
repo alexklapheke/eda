@@ -1,4 +1,4 @@
-__version__ = "0.1"
+__version__ = "0.1.2020-01-04"
 
 import eda.summary
 import eda.accuracy
